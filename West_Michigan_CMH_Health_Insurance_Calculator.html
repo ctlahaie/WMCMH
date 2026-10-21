@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>West Michigan CMH – 2027 Health Plan Cost Calculator</title>
+<style>
+:root{--navy:#1f2a36;--teal:#33bfa6;--light:#f6f4f1;--orange:#f58634;--green:#2e8b57}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--light);color:#222}
+header{background:var(--navy);border-bottom:6px solid var(--orange);color:#fff;padding:18px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+header .ttl{flex:1}header h1{margin:0;font-size:26px}header p{margin:6px 0 0;color:var(--teal)}
+.pool{text-align:center;line-height:1.1}.pool b{display:block;font-size:32px;letter-spacing:1px;color:var(--teal);font-weight:600}.pool b span{font-weight:800}.pool small{display:block;color:#fff;font-size:12px;margin-top:4px}
+.wrap{max-width:1250px;margin:20px auto;padding:0 18px}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px;margin-bottom:18px}
+.card h2{margin:0 0 14px;color:var(--navy);font-size:19px;border-left:5px solid var(--orange);padding-left:10px}
+.row1{display:grid;grid-template-columns:1fr 2fr;gap:18px;align-items:start;margin-bottom:18px}
+.row2{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-top:14px;border-top:1px solid #e3e3e3}
+@media(max-width:760px){.row1,.row2{grid-template-columns:1fr}}
+label{font-weight:600;display:block;margin-bottom:6px;color:var(--navy)}
+select{width:100%;padding:9px;font-size:15px;border-radius:6px;border:1px solid #bbb}
+input[type=range]{width:100%;accent-color:var(--teal)}
+.val{float:right;color:var(--teal);font-weight:700}.hint{font-size:12px;color:#666;margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--navy);color:#fff;padding:9px 6px;text-align:right;border-bottom:3px solid var(--orange)}th:first-child{text-align:left}
+td{padding:8px 6px;border-bottom:1px solid #e3e3e3;text-align:right}td:first-child{text-align:left;font-weight:600}
+tr.total td{background:#fdf1e7;font-weight:700;font-size:15px;color:var(--navy)}
+.badge{background:var(--teal);color:#fff;border-radius:10px;padding:2px 8px;font-size:11px}.neg{color:var(--green)}
+#resWrap{width:100%;overflow-x:auto}
+#res{table-layout:fixed;width:100%;min-width:900px}
+#res col.c0{width:24%}#res col.cp{width:19%}
+#res th,#res td{overflow:hidden;white-space:nowrap;font-variant-numeric:tabular-nums}
+#res th{white-space:normal;height:66px;vertical-align:bottom;line-height:1.25}
+#res td:first-child{white-space:normal}
+#res .badge{display:block;width:max-content;margin:4px 0 0 auto}#res .nob{visibility:hidden}
+.bars .row{display:flex;align-items:center;margin:7px 0}.bars .name{width:260px;font-size:13px;font-weight:600}
+.bars .bar{height:22px;border-radius:4px;display:flex;overflow:hidden;flex:1;background:#f1f1f1}
+.bars .p{background:var(--navy)}.bars .o{background:var(--orange)}.bars .amt{width:110px;text-align:right;font-weight:700;font-size:13px}
+.legend span{display:inline-block;width:12px;height:12px;margin:0 4px 0 14px;vertical-align:middle}
+.notes{font-size:12.5px;color:#555;line-height:1.55}.plan-sum td,.plan-sum th{font-size:13px}
+</style></head><body>
+<header><div class="ttl"><h1>West Michigan CMH</h1><p>2027 Health Plan Cost Calculator – Compare your estimated total annual cost</p></div>
+<div class="pool"><b>THE <span>POOL</span></b><small>West Michigan Health Insurance Pool</small></div></header>
+<div class="wrap">
+<div class="card"><h2>1. Your Coverage &amp; Expected Usage</h2>
+<div class="row1">
+ <div><label>Coverage Level</label><select id="tier"><option value="single">Single</option><option value="two">Two Person</option><option value="family" selected>Family</option></select><div class="hint">Employee cost = bi-weekly employee cost × 26 pays.</div></div>
+ <div><label>Estimated Annual Medical Costs <span class="val" id="muV"></span></label><input type="range" id="mu" min="0" max="50000" step="250" value="2500"><div class="hint">Total cost of doctor visits, labs, imaging, ER, surgery and hospital care for the year (before insurance).</div></div>
+</div>
+<div class="row2">
+ <div><label>Generic Rx Fills per Year <span class="val" id="genV"></span></label><input type="range" id="gen" min="0" max="60" value="0"></div>
+ <div><label>Preferred Brand / Specialty Rx Fills per Year <span class="val" id="brV"></span></label><input type="range" id="br" min="0" max="60" value="0"></div>
+ <div><label>Non-Preferred Brand / Specialty Rx Fills per Year <span class="val" id="npV"></span></label><input type="range" id="np" min="0" max="60" value="0"></div>
+</div></div>
+<div class="card"><h2>2. Estimated Annual Cost by Plan</h2><div id="resWrap"><table id="res"></table></div>
+<p class="hint">Negative amounts (shown in green) represent dollars available to you – they reduce your total cost.</p></div>
+<div class="card"><h2>3. Visual Comparison</h2>
+<div class="legend" style="font-size:13px"><span style="background:var(--navy)"></span>Employee Cost (net of HSA)<span style="background:var(--orange)"></span>Out-of-Pocket (Medical + Rx)</div><div class="bars" id="bars"></div></div>
+<div class="card"><h2>4. Plan Design Summary (In-Network)</h2><table class="plan-sum" id="sum"></table></div>
+<div class="card notes"><b>Methodology &amp; notes</b><br>
+• Employee annual cost is the 2027 bi-weekly employee cost × 26 pays. Employer HSA contributions (Priority HSA 3500 PH06) are shown as a negative amount and reduce total cost.<br>
+• Medical costs assume one $150 office visit per $500 of medical cost (up to 12 visits). On BCBS Traditional Value 2000 182 ($30) and Priority Traditional 2000 Custom ($20), office visits are a copay not subject to the deductible. All other medical costs go to the deductible, then 20% coinsurance up to the coinsurance maximum. On the HSA plans, all medical costs apply to the deductible first.<br>
+• Rx: Value 2000 182 – $20 generic, $40 preferred brand, $80 non-preferred brand (specialty is 15%/$200 max preferred and 25%/$300 max non-preferred; modeled at brand copays). Value HSA 3500 202 – after deductible $10 / $80 max / $100 max. Priority Traditional 2000 Custom – $10 / $80 max / $160 max, not subject to deductible. Priority HSA 3500 PH06 – after deductible $10 / $80 max / $160 max. Coinsurance tiers are modeled at the per-fill maximum. On HSA plans, before the deductible is met each fill costs 3x that amount (applied to the deductible).<br>
+• Two-person and family contracts use family deductible, coinsurance and out-of-pocket amounts applied to total household usage. Rx counts toward the out-of-pocket maximum.<br>
+• Preventive care is covered at 100% and is not included.</div>
+<div class="card notes" style="border-top:4px solid var(--orange)"><b>Disclaimer</b><br>
+This calculator is provided for illustrative purposes only and is based on the Benefits-at-a-Glance and Schedule of Benefits information available at the time it was prepared. It is intended to be used as one piece of information when considering plan options and should not be considered advice or a recommendation on which plan to choose. Each individual's needs and circumstances are different, and employees should review all plan materials and consider their own expected health care needs before making an enrollment decision.<br><br>
+All results are estimates based on simplified assumptions and the information entered. Actual out-of-pocket costs will vary based on actual claims, provider charges, network status, drug pricing and tier placement, and the terms of the governing plan documents. This tool is not a contract and does not guarantee coverage or payment of benefits. In the event of any discrepancy between this tool and the official plan documents, the plan documents will control. Plan designs, rates and contributions are subject to change.<br><br>
+This tool does not provide tax, legal, or medical advice. Information about health savings accounts (HSAs), including eligibility and contribution rules, should be reviewed with a qualified tax advisor. Gallagher Benefit Services and The Pool are not responsible for any errors or omissions contained in this tool, or for any decisions made or actions taken in reliance on its results.</div>
+</div>
+<script>
+const BW=(s,t,f)=>({single:s*26,two:t*26,family:f*26});
+const PLANS=[
+ {n:"BCBS Traditional Value 2000 182",hsa:false,ded:[2000,4000],coins:.2,cmax:[2500,5000],oop:[4500,9000],ov:30,rx:{g:20,b:40,n:80},prem:BW(121.27,388.18,449.63),hsaC:{single:0,two:0,family:0},
+  sum:["Renewal","$2,000 / $4,000 (embedded)","20%","$4,500 / $9,000","$30 PCP / $50 specialist","$20 / $40 / $80"]},
+ {n:"BCBS Value HSA 3500 202",hsa:true,ded:[3500,7000],coins:.2,cmax:[2000,4000],oop:[6800,13600],ov:null,rx:{g:10,b:80,n:100},prem:BW(16.52,136.48,135),hsaC:{single:0,two:0,family:0},
+  sum:["Renewal","$3,500 / $7,000 (embedded)","20%","$6,800 / $13,600","80% after deductible","After ded: $10 / 20% ($80 max) / 20% ($100 max)"]},
+ {n:"Priority Traditional 2000 Custom",hsa:false,ded:[2000,4000],coins:.2,cmax:[2000,4000],oop:[5000,10000],ov:20,rx:{g:10,b:80,n:160},prem:BW(51.47,220.35,239.84),hsaC:{single:0,two:0,family:0},
+  sum:["New plan","$2,000 / $4,000 (embedded)","20%","$5,000 / $10,000","$20 PCP / $50 specialist","$10 / 20% ($80 max) / 20% ($160 max)"]},
+ {n:"Priority HSA 3500 PH06",hsa:true,ded:[3500,7000],coins:.2,cmax:[2000,4000],oop:[5500,11000],ov:null,rx:{g:10,b:80,n:160},prem:BW(0,4.76,0),hsaC:{single:998.11,two:0,family:770.83},
+  sum:["New plan","$3,500 / $7,000 (aggregate)","20%","$5,500 / $11,000","80% after deductible","After ded: $10 / 20% ($80 max) / 20% ($160 max)"]}];
+const OV=150,$=id=>document.getElementById(id);
+const f=v=>(v<0?"-":"")+"$"+Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+function calc(p,t,mu,fills){
+ const i=t==="single"?0:1;let ded=0,co=0,cp=0,rx=0,dLeft=p.ded[i],cLeft=p.cmax[i],oLeft=p.oop[i];
+ const pay=a=>{a=Math.min(a,oLeft);oLeft-=a;return a};
+ const medClaim=amt=>{const d=Math.min(amt,dLeft);dLeft-=d;ded+=pay(d);const c=Math.min((amt-d)*p.coins,cLeft);cLeft-=c;co+=pay(c)};
+ const ov=Math.min(12,Math.floor(mu/500)),other=Math.max(0,mu-ov*OV);
+ for(let m=0;m<12;m++){
+  if(p.ov)cp+=pay(p.ov*ov/12);else medClaim(OV*ov/12);
+  medClaim(other/12);
+  for(const k in fills){const n=fills[k],q=Math.floor((m+1)*n/12)-Math.floor(m*n/12);
+   for(let j=0;j<q;j++){const c=p.rx[k];
+    if(p.hsa&&dLeft>0){const d=Math.min(3*c,dLeft);dLeft-=d;rx+=pay(d)}else rx+=pay(c)}}
+ }
+ const prem=p.prem[t],hsa=-p.hsaC[t],oopT=ded+co+cp+rx;return{prem,hsa,ded,co,cp,rx,oopT,total:prem+hsa+oopT}}
+function render(){
+ const t=$("tier").value,mu=+$("mu").value,fills={g:+$("gen").value,b:+$("br").value,n:+$("np").value};
+ $("muV").textContent="$"+mu.toLocaleString();$("genV").textContent=fills.g;$("brV").textContent=fills.b;$("npV").textContent=fills.n;
+ const R=PLANS.map(p=>({p,r:calc(p,t,mu,fills)}));const min=Math.min(...R.map(x=>x.r.total));
+ const rows=[["Employee Cost (Bi-Weekly × 26)","prem"],["Employer HSA Contribution","hsa"],["Deductible","ded"],["Coinsurance","co"],["Office Visit Copays","cp"],["Prescription Drugs","rx"],["Total Out-of-Pocket","oopT"]];
+ let h='<colgroup><col class="c0">'+R.map(()=>'<col class="cp">').join("")+'</colgroup>';
+ h+="<tr><th>Cost Component</th>"+R.map(x=>`<th>${x.p.n}<span class="badge ${x.r.total===min?'':'nob'}">Lowest</span></th>`).join("")+"</tr>";
+ h+=`<tr><td>Bi-Weekly Employee Cost</td>`+R.map(x=>`<td>${f(x.r.prem/26)}</td>`).join("")+"</tr>";
+ rows.forEach(([l,k])=>h+=`<tr><td>${l}</td>`+R.map(x=>`<td class="${x.r[k]<0?'neg':''}">${f(x.r[k])}</td>`).join("")+"</tr>");
+ h+=`<tr class="total"><td>Estimated Total Annual Cost</td>`+R.map(x=>`<td class="${x.r.total<0?'neg':''}">${f(x.r.total)}</td>`).join("")+"</tr>";
+ h+=`<tr><td>Difference vs. Lowest</td>`+R.map(x=>`<td>${x.r.total===min?'—':'+'+f(x.r.total-min)}</td>`).join("")+"</tr>";
+ $("res").innerHTML=h;
+ const mx=Math.max(...R.map(x=>Math.max(0,x.r.prem+x.r.hsa)+x.r.oopT),1);
+ $("bars").innerHTML=R.map(x=>`<div class="row"><div class="name">${x.p.n}</div><div class="bar"><div class="p" style="width:${Math.max(0,x.r.prem+x.r.hsa)/mx*100}%"></div><div class="o" style="width:${x.r.oopT/mx*100}%"></div></div><div class="amt">${f(x.r.total)}</div></div>`).join("");
+}
+let s="<tr><th>Plan</th><th>Status</th><th>Deductible (Ind/Fam)</th><th>Coinsurance</th><th>OOP Max (Ind/Fam)</th><th>Office Visits</th><th>Rx (Generic / Pref Brand-Specialty / Non-Pref Brand-Specialty)</th></tr>";
+PLANS.forEach(p=>s+=`<tr><td>${p.n}</td>`+p.sum.map(v=>`<td>${v}</td>`).join("")+"</tr>");$("sum").innerHTML=s;
+["tier","mu","gen","br","np"].forEach(id=>$(id).addEventListener("input",render));render();
+</script></body></html>
